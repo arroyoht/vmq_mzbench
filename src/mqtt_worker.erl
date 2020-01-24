@@ -58,7 +58,7 @@ initial_state() ->   % init the MZbench worker
 
 init(State) ->  % init gen_mqtt
     {A,B,C} = os:timestamp(),
-    random:seed(A,B,C),
+    rand:seed(A,B,C),
     {ok, State}.
 
 metrics() ->
@@ -256,11 +256,11 @@ publish_to_one(State, Meta, TopicPrefix, ClientId, Payload, Qos, Retain) ->
     publish(State, Meta, TopicPrefix ++ ClientId, Payload, Qos, Retain).
 
 idle(#state{mqtt_fsm = SessionPid} = State, _Meta) ->
-    gen_fsm:send_all_state_event(SessionPid, {idle}),
+    gen_statem:cast(SessionPid, {idle}),
     {nil, State}.
 
 forward(#state{mqtt_fsm = SessionPid} = State, _Meta, TopicPrefix, Qos) ->
-    gen_fsm:send_all_state_event(SessionPid, {forward, TopicPrefix, Qos}),
+    gen_statem:cast(SessionPid, {forward, TopicPrefix, Qos}),
     {nil, State}.
 
 client(#state{client = Client}=State, _Meta) ->
@@ -283,7 +283,7 @@ random_client_ip(State, _Meta, IfPrefix) ->
         0 ->
             {"0.0.0.0", State};
         Total ->
-            {lists:nth(random:uniform(Total), Addresses), State}
+            {lists:nth(rand:uniform(Total), Addresses), State}
     end.
 
 load_client_cert(State, _Meta, CertBin) ->
@@ -411,4 +411,4 @@ randlist(N) ->
 randlist(0, Acc) ->
     Acc;
 randlist(N, Acc) ->
-    randlist(N - 1, [random:uniform(26) + 96 | Acc]).
+    randlist(N - 1, [rand:uniform(26) + 96 | Acc]).
